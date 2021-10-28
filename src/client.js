@@ -1,12 +1,5 @@
 const fetch = require('node-fetch');
 
-let EventEmitter;
-try {
-	EventEmitter = require('eventemitter3');
-} catch {
-	EventEmitter = require('events');
-}
-
 const MAIN_API = 'https://discord.com/api/';
 const API_VER = 'v9';
 const DISCORD_API = MAIN_API + API_VER;
@@ -18,9 +11,8 @@ const UNKNOWN_ROLE = 10011;
 const MISSING_GUILD_ACCESS = 50001;
 const MISSING_PERMISSIONS = 50013;
 
-class Client extends EventEmitter {
+class Client {
     constructor(options = {}) {
-		super();
         this.token = options.token;
     }
 
@@ -437,27 +429,21 @@ class Client extends EventEmitter {
         })
     }
 
+    getWidgetImage(guildID, style) {
+        return new Promise(async (res, rej) => {
+            await fetch(`${DISCORD_API}/guilds/${guildID}}/widget.png?style=${style}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bot ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(r => {
+                res(r?.url);
+            })
+        })
+        .catch(() => { });
+    }
 }
 
-const client = new Client({
-    token: `ODgwNjU4MDA0NzAwMTc2NDU0.YSherg.uWHLxrimVyXbDftZkBNtshbGe-o`
-});
-
-//client.getEmojiFromID('896720311733616640','902840345249865768').then(console.log)
-/*
-client.createInvite('896721225437564928', {
-    codeUses: 1,
-    maxAge: 20,
-    maxUses: 10,
-    tempInvite: true
-}).then(console.log)
-*/
-
-//client.getGuildMemberBan('896720311733616640', '675996677366218774').then(console.log)
-//client.getGuildBans('896720311733616640').then(e => console.log(e.length));
-const { Permissions } = require('./permissions.js');
-//client.createGuildRole('896720311733616640', 'testt', Permissions.createInstantInvite, 0xfffccc, true, '', '', true).then(console.log);
-//client.deleteGuildRole('896720311733616640', '903000936799170580').then(console.log)
-//client.editRolePosition('896720311733616640', '903000936799170580', '1').then(console.log);
-
-client.getGuildVanityCode(`846136758470443069`).then(console.log)
+module.exports.Client = Client;
